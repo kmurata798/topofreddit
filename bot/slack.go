@@ -62,7 +62,7 @@ func RespondToEvents(slackClient *slack.RTM) {
 	}
 }
 
-const helpMessage = "type in `@Reddit Top 5 <command_arg_1> <command_arg_2>` to run a command.\n\nCommands: `top all`\n`echo 'Hello there!'`"
+const helpMessage = "type in `@Reddit Top 5 <command_arg_1> <command_arg_2>` to run a command.\n\nCommands:\n`help`\n`top all`\n`echo 'Hello there!'`"
 
 // sendHelp is a working help message, for reference.
 func sendHelp(slackClient *slack.RTM, message, slackChannel string) {

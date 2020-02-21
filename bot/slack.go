@@ -27,16 +27,20 @@ func CreateSlackClient(apiKey string) *slack.RTM {
 */
 func RespondToEvents(slackClient *slack.RTM) {
 	for msg := range slackClient.IncomingEvents {
+		// Log all events
 		fmt.Println("Event Received: ", msg.Type)
 		// Switch on the incoming event type
 		switch ev := msg.Data.(type) {
 		case *slack.MessageEvent:
+			// The bot's prefix (@topofreddit)
 			botTagString := fmt.Sprintf("<@%s> ", slackClient.GetInfo().User.ID)
 			if !strings.Contains(ev.Msg.Text, botTagString) {
 				continue
 			}
+			// Clean the prefix
 			message := strings.Replace(ev.Msg.Text, botTagString, "", -1)
 
+			// Register commands
 			echoMessage(slackClient, message, ev.Channel)
 			sendHelp(slackClient, message, ev.Channel)
 			sendSubreddits(slackClient, message, ev.Channel)

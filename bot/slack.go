@@ -62,7 +62,7 @@ func RespondToEvents(slackClient *slack.RTM) {
 	}
 }
 
-const helpMessage = "type in '@Reddit Top 5 <command_arg_1> <command_arg_2>'"
+const helpMessage = "type in `@Reddit Top 5 <command_arg_1> <command_arg_2>` to run a command.\n\nCommands: `top all`\n`echo 'Hello there!'`"
 
 // sendHelp is a working help message, for reference.
 func sendHelp(slackClient *slack.RTM, message, slackChannel string) {
@@ -90,7 +90,7 @@ func sendSubreddits(slackClient *slack.RTM, message, slackChannel string) {
 		return
 	}
 
-	response := "Please pass in a subreddit name to get the top 5 posts for. Example: `@topofreddit top all`"
+	response := "Please pass in a subreddit name to get the top 5 posts for. Example: `@Reddit Top 5 top all`"
 	if len(splitMessage) < 2 {
 		slackClient.SendMessage(slackClient.NewOutgoingMessage(response, slackChannel))
 	}

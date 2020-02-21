@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/slack-go/slack"
 	"strings"
+
+	"github.com/tempor1s/topofreddit/scraper"
 )
 
 const helpMessage = "type in '@legacybotboi <command_arg_1> <command_arg_2>'"
@@ -37,7 +39,22 @@ func RespondToEvents(slackClient *slack.RTM) {
 
 			echoMessage(slackClient, message, ev.Channel)
 			sendHelp(slackClient, message, ev.Channel)
-			// Any
+			sendSubreddits(slackClient, message, ev.Channel)
+		case *slack.PresenceChangeEvent:
+			fmt.Printf("Presence Change: %v\n", ev)
+
+		case *slack.LatencyReport:
+			fmt.Printf("Current latency: %v\n", ev.Value)
+
+		case *slack.DesktopNotificationEvent:
+			fmt.Printf("Desktop Notification: %v\n", ev)
+
+		case *slack.RTMError:
+			fmt.Printf("Error: %s\n", ev.Error())
+
+		case *slack.InvalidAuthEvent:
+			fmt.Printf("Invalid credentials")
+			return
 		default:
 		}
 	}
@@ -51,14 +68,29 @@ func sendHelp(slackClient *slack.RTM, message, slackChannel string) {
 	slackClient.SendMessage(slackClient.NewOutgoingMessage(helpMessage, slackChannel))
 }
 
-// sendResponse is NOT unimplemented --- write code in the function body to complete!
-
+// echoMessage will just echo anything after the echo keyword.
 func echoMessage(slackClient *slack.RTM, message, slackChannel string) {
-	command := strings.ToLower(message)
-	println("[RECEIVED] sendResponse:", command)
+	splitMessage := strings.Fields(strings.ToLower(message))
 
-	//if strings.ToLower(message) != "echo" {
-	//	return
-	//}
-	slackClient.SendMessage(slackClient.NewOutgoingMessage(message, slackChannel))
+	if splitMessage[0] != "echo" {
+		return
+	}
+
+	slackClient.SendMessage(slackClient.NewOutgoingMessage(strings.Join(splitMessage[1:], " "), slackChannel))
+}
+
+func sendSubreddits(slackClient *slack.RTM, message, slackChannel string) {
+	splitMessage := strings.Fields(strings.ToLower(message))
+
+	if splitMessage[0] != "top" {
+		return
+	}
+
+	response := "Please pass in a subreddit name to get the top 5 posts for. Example: `@topofreddit top all`"
+	if len(splitMessage) < 2 {
+		slackClient.SendMessage(slackClient.NewOutgoingMessage(response, slackChannel))
+	}
+
+	posts := scraper.GetSubreddits(splitMessage[1])
+	slackClient.SendMessage(slackClient.NewOutgoingMessage(posts, slackChannel))
 }

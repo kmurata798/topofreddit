@@ -8,8 +8,6 @@ import (
 	"github.com/tempor1s/topofreddit/scraper"
 )
 
-const helpMessage = "type in '@legacybotboi <command_arg_1> <command_arg_2>'"
-
 /*
    CreateSlackClient sets up the slack RTM (real-time messaging) client library,
    initiating the socket connection and returning the client.
@@ -63,6 +61,8 @@ func RespondToEvents(slackClient *slack.RTM) {
 		}
 	}
 }
+
+const helpMessage = "type in '@Reddit Top 5 <command_arg_1> <command_arg_2>'"
 
 // sendHelp is a working help message, for reference.
 func sendHelp(slackClient *slack.RTM, message, slackChannel string) {

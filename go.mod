@@ -1,4 +1,4 @@
-module github.com/tempor1s/goslackit
+module github.com/tempor1s/topofreddit
 
 require (
 	github.com/joho/godotenv v1.3.0

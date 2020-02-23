@@ -35,13 +35,24 @@ func RespondToEvents(slackClient *slack.RTM) {
 			if !strings.Contains(ev.Msg.Text, botTagString) {
 				continue
 			}
-			// Clean the prefix
+			// Get rid of the prefix
 			message := strings.Replace(ev.Msg.Text, botTagString, "", -1)
+			splitMessage := strings.Fields(message)
 
-			// Register commands
-			echoMessage(slackClient, message, ev.Channel)
-			sendHelp(slackClient, message, ev.Channel)
-			sendSubreddits(slackClient, message, ev.Channel)
+			// If they do not specify a command just @ the bot, send them the help menu.
+			if message == "" {
+				sendHelp(slackClient, ev.Channel)
+			}
+
+			// Basic command handler
+			switch strings.ToLower(splitMessage[0]) {
+			case "help":
+				sendHelp(slackClient, ev.Channel)
+			case "echo":
+				echoMessage(slackClient, strings.Join(splitMessage[1:], " "), ev.Channel)
+			case "top":
+				sendSubreddits(slackClient, splitMessage[1:], ev.Channel)
+			}
 		case *slack.PresenceChangeEvent:
 			fmt.Printf("Presence Change: %v\n", ev)
 
@@ -62,13 +73,10 @@ func RespondToEvents(slackClient *slack.RTM) {
 	}
 }
 
-const helpMessage = "type in `@Reddit Top 5 <command_arg_1> <command_arg_2>` to run a command.\n\nCommands:\n`help`\n`top all`\n`echo 'Hello there!'`"
+const helpMessage = "type in `@Reddit Top 5 (command) <arg1> <arg2>` to run a command.\n\nCommands:\n`help`\n`top <subreddit>`\n`echo <text>`"
 
 // sendHelp is a working help message, for reference.
-func sendHelp(slackClient *slack.RTM, message, slackChannel string) {
-	if strings.ToLower(message) != "help" {
-		return
-	}
+func sendHelp(slackClient *slack.RTM, slackChannel string) {
 	slackClient.SendMessage(slackClient.NewOutgoingMessage(helpMessage, slackChannel))
 }
 
@@ -76,25 +84,15 @@ func sendHelp(slackClient *slack.RTM, message, slackChannel string) {
 func echoMessage(slackClient *slack.RTM, message, slackChannel string) {
 	splitMessage := strings.Fields(strings.ToLower(message))
 
-	if splitMessage[0] != "echo" {
-		return
-	}
-
 	slackClient.SendMessage(slackClient.NewOutgoingMessage(strings.Join(splitMessage[1:], " "), slackChannel))
 }
 
-func sendSubreddits(slackClient *slack.RTM, message, slackChannel string) {
-	splitMessage := strings.Fields(strings.ToLower(message))
-
-	if splitMessage[0] != "top" {
-		return
-	}
-
+func sendSubreddits(slackClient *slack.RTM, args []string, slackChannel string) {
 	response := "Please pass in a subreddit name to get the top 5 posts for. Example: `@Reddit Top 5 top all`"
-	if len(splitMessage) < 2 {
+	if len(args) == 0 {
 		slackClient.SendMessage(slackClient.NewOutgoingMessage(response, slackChannel))
 	}
 
-	posts := scraper.GetSubreddits(splitMessage[1])
+	posts := scraper.GetSubreddits(args[0])
 	slackClient.SendMessage(slackClient.NewOutgoingMessage(posts, slackChannel))
 }
